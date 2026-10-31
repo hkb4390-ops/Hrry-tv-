@@ -1,1052 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hrry TV — Live TV From Around The World</title>
-    <meta name="description" content="Watch live television channels from countries around the world with Hrry TV.">
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: {
-                            900: '#0a0b10',
-                            800: '#12131c',
-                            700: '#1b1d2a',
-                            600: '#26293c'
-                        },
-                        neon: {
-                            cyan: '#00f2fe',
-                            blue: '#4facfe',
-                            purple: '#a855f7',
-                            pink: '#ec4899'
-                        }
-                    },
-                    boxShadow: {
-                        'glow': '0 0 25px -5px rgba(79, 172, 254, 0.3)',
-                        'glow-pink': '0 0 25px -5px rgba(236, 72, 153, 0.3)',
-                        'glow-purple': '0 0 25px -5px rgba(168, 85, 247, 0.3)'
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- FontAwesome & Google Fonts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- HLS.js -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <style>
-        * {
-            font-family: 'Outfit', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background-color: #0a0b10;
-            color: #f3f4f6;
-            overflow-x: hidden;
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0a0b10;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #26293c;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4facfe;
-        }
-        .glass-panel {
-            background: rgba(18, 19, 28, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .glass-card {
-            background: rgba(27, 29, 42, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card:hover {
-            border-color: rgba(79, 172, 254, 0.4);
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px -10px rgba(79, 172, 254, 0.2);
-        }
-        .hero-gradient {
-            background: radial-gradient(circle at 50% 0%, rgba(79, 172, 254, 0.15) 0%, rgba(168, 85, 247, 0.1) 35%, transparent 70%);
-        }
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.05); }
-        }
-        .animate-pulse-slow {
-            animation: pulse-slow 8s infinite ease-in-out;
-        }
-        /* Skeleton shimmer */
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .skeleton {
-            background: linear-gradient(90deg, #1b1d2a 25%, #26293c 50%, #1b1d2a 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col selection:bg-neon-blue selection:text-white pb-20 md:pb-0">
-
-    <!-- Background Ambient Glows -->
-    <div class="fixed top-0 left-1/4 w-96 h-96 bg-neon-blue/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
-    <div class="fixed top-1/3 right-1/4 w-96 h-96 bg-neon-purple/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow" style="animation-delay: 4s;"></div>
-
-    <!-- Desktop Top Navigation -->
-    <header class="hidden md:flex sticky top-0 z-40 glass-panel border-b border-white/10 px-8 py-4 items-center justify-between">
-        <div class="flex items-center space-x-3 cursor-pointer" onclick="router.navigate('/home')">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-neon-blue to-neon-purple flex items-center justify-center shadow-glow">
-                <i class="fa-solid fa-tv text-white text-lg"></i>
-            </div>
-            <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-neon-blue bg-clip-text text-transparent">Hrry <span class="text-neon-blue">TV</span></span>
-        </div>
-        
-        <div class="flex items-center space-x-1 bg-dark-700/80 p-1.5 rounded-2xl border border-white/5">
-            <button onclick="router.navigate('/home')" class="nav-btn-desk px-5 py-2 rounded-xl text-sm font-medium transition-all text-gray-400 hover:text-white" data-route="/home">
-                <i class="fa-solid fa-house mr-2"></i>Home
-            </button>
-            <button onclick="router.navigate('/countries')" class="nav-btn-desk px-5 py-2 rounded-xl text-sm font-medium transition-all text-gray-400 hover:text-white" data-route="/countries">
-                <i class="fa-solid fa-globe mr-2"></i>Countries
-            </button>
-            <button onclick="router.navigate('/favorites')" class="nav-btn-desk px-5 py-2 rounded-xl text-sm font-medium transition-all text-gray-400 hover:text-white" data-route="/favorites">
-                <i class="fa-solid fa-heart mr-2"></i>Favorites
-            </button>
-            <button onclick="router.navigate('/recent')" class="nav-btn-desk px-5 py-2 rounded-xl text-sm font-medium transition-all text-gray-400 hover:text-white" data-route="/recent">
-                <i class="fa-solid fa-clock-rotate-left mr-2"></i>Recent
-            </button>
-        </div>
-
-        <div class="relative w-72">
-            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" id="globalSearchInput" placeholder="Search countries, channels..." 
-                   class="w-full bg-dark-700/90 border border-white/10 rounded-xl pl-11 pr-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-neon-blue/60 transition-all">
-        </div>
-    </header>
-
-    <!-- Mobile Top Header -->
-    <header class="md:hidden sticky top-0 z-40 glass-panel px-4 py-3 flex items-center justify-between border-b border-white/10">
-        <div class="flex items-center space-x-2.5 cursor-pointer" onclick="router.navigate('/home')">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-neon-blue to-neon-purple flex items-center justify-center shadow-glow">
-                <i class="fa-solid fa-tv text-white text-xs"></i>
-            </div>
-            <span class="text-lg font-bold bg-gradient-to-r from-white to-neon-blue bg-clip-text text-transparent">Hrry TV</span>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="toggleMobileSearch()" class="w-9 h-9 rounded-xl bg-dark-700 border border-white/10 flex items-center justify-center text-gray-300">
-                <i class="fa-solid fa-search text-xs"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- Mobile Expanded Search Bar -->
-    <div id="mobileSearchContainer" class="hidden md:hidden px-4 py-2 glass-panel border-b border-white/10 sticky top-[57px] z-30">
-        <div class="relative">
-            <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-            <input type="text" id="mobileSearchInput" placeholder="Search countries, channels..." 
-                   class="w-full bg-dark-700/90 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-neon-blue/60">
-        </div>
-    </div>
-
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Views will be dynamically injected here -->
-        <div id="appView"></div>
-    </main>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-white/10 px-6 py-2 flex items-center justify-around">
-        <button onclick="router.navigate('/home')" class="nav-btn-mob flex flex-col items-center py-1 text-gray-400" data-route="/home">
-            <i class="fa-solid fa-house text-lg mb-0.5"></i>
-            <span class="text-[10px] font-medium">Home</span>
-        </button>
-        <button onclick="router.navigate('/countries')" class="nav-btn-mob flex flex-col items-center py-1 text-gray-400" data-route="/countries">
-            <i class="fa-solid fa-globe text-lg mb-0.5"></i>
-            <span class="text-[10px] font-medium">Countries</span>
-        </button>
-        <button onclick="router.navigate('/favorites')" class="nav-btn-mob flex flex-col items-center py-1 text-gray-400" data-route="/favorites">
-            <i class="fa-solid fa-heart text-lg mb-0.5"></i>
-            <span class="text-[10px] font-medium">Favorites</span>
-        </button>
-        <button onclick="router.navigate('/recent')" class="nav-btn-mob flex flex-col items-center py-1 text-gray-400" data-route="/recent">
-            <i class="fa-solid fa-clock-rotate-left text-lg mb-0.5"></i>
-            <span class="text-[10px] font-medium">Recent</span>
-        </button>
-    </nav>
-
-    <!-- Video Player Modal / Overlay -->
-    <div id="videoPlayerModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col hidden opacity-0 transition-opacity duration-300">
-        <!-- Player Header -->
-        <div class="glass-panel px-4 py-3 flex items-center justify-between border-b border-white/10">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-dark-700 border border-white/10 flex items-center justify-center overflow-hidden p-1">
-                    <img id="playerChannelLogo" src="" alt="" class="w-full h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1593784991095-a205069470b6?w=100&auto=format&fit=crop&q=60'">
-                </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h2 id="playerChannelName" class="text-white font-bold text-sm sm:text-base line-clamp-1">Channel Name</h2>
-                        <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
-                            <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1"></span> LIVE
-                        </span>
-                    </div>
-                    <p id="playerChannelMeta" class="text-xs text-gray-400">Country • Language</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button id="playerFavBtn" onclick="togglePlayerFavorite()" class="w-10 h-10 rounded-xl bg-dark-700/80 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all">
-                    <i class="fa-regular fa-heart text-base"></i>
-                </button>
-                <button onclick="closeVideoPlayer()" class="w-10 h-10 rounded-xl bg-dark-700/80 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all">
-                    <i class="fa-solid fa-xmark text-base"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Video Player Body -->
-        <div class="flex-1 relative flex items-center justify-center bg-black overflow-hidden">
-            <video id="videoElement" class="w-full h-full max-h-[80vh] object-contain" playsinline controls autoplay></video>
-
-            <!-- Loading Spinner State -->
-            <div id="playerLoading" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20">
-                <div class="w-16 h-16 rounded-full border-4 border-neon-blue/20 border-t-neon-blue animate-spin mb-4"></div>
-                <p class="text-gray-300 font-medium text-sm animate-pulse">Connecting to live stream...</p>
-            </div>
-
-            <!-- Error State -->
-            <div id="playerError" class="absolute inset-0 bg-dark-900/95 flex flex-col items-center justify-center p-6 text-center z-20 hidden">
-                <div class="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-2xl mb-4">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-2">Stream unavailable</h3>
-                <p class="text-sm text-gray-400 max-w-md mb-6">This stream is currently offline, geo-blocked, CORS-blocked or unavailable on the public network.</p>
-                <div class="flex flex-wrap gap-3 justify-center">
-                    <button onclick="retryStream()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-neon-blue to-neon-purple text-white font-medium text-sm shadow-glow transition-all hover:opacity-90">
-                        <i class="fa-solid fa-rotate-right mr-2"></i>Retry Stream
-                    </button>
-                    <a id="externalStreamLink" href="#" target="_blank" class="px-5 py-2.5 rounded-xl bg-dark-700 border border-white/10 text-white font-medium text-sm transition-all hover:bg-dark-600">
-                        <i class="fa-solid fa-external-link-alt mr-2"></i>Open Stream
-                    </a>
-                    <button onclick="closeVideoPlayer()" class="px-5 py-2.5 rounded-xl bg-dark-700 border border-white/10 text-gray-300 font-medium text-sm transition-all hover:bg-dark-600">
-                        Back to Channels
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Application JavaScript Logic -->
-    <script>
-        // --- State Management & App Configuration ---
-        const state = {
-            countries: [],
-            logos: {},
-            currentCountry: null,
-            channels: [],
-            currentChannel: null,
-            favorites: JSON.parse(localStorage.getItem('hrry_tv_favorites') || '[]'),
-            recent: JSON.parse(localStorage.getItem('hrry_tv_recent') || '[]'),
-            searchQuery: '',
-            loadingCountries: false,
-            loadingChannels: false,
-            activeRoute: '/home'
-        };
-
-        let hlsInstance = null;
-        let currentPlaylistController = null;
-        let searchDebounceTimer = null;
-
-        // --- Router System ---
-        const router = {
-            init() {
-                window.addEventListener('popstate', () => this.handleRoute());
-                this.handleRoute();
-
-                // Setup search listeners
-                const globalInput = document.getElementById('globalSearchInput');
-                const mobileInput = document.getElementById('mobileSearchInput');
-                
-                [globalInput, mobileInput].forEach(input => {
-                    if (input) {
-                        input.addEventListener('input', (e) => {
-                            clearTimeout(searchDebounceTimer);
-                            searchDebounceTimer = setTimeout(() => {
-                                state.searchQuery = e.target.value.trim().toLowerCase();
-                                // Sync both search inputs
-                                if (globalInput) globalInput.value = state.searchQuery;
-                                if (mobileInput) mobileInput.value = state.searchQuery;
-                                
-                                if (state.searchQuery.length > 0 && state.activeRoute !== '/search') {
-                                    this.navigate('/search');
-                                } else if (state.searchQuery.length === 0 && state.activeRoute === '/search') {
-                                    this.navigate('/home');
-                                } else if (state.activeRoute === '/search') {
-                                    renderSearch();
-                                }
-                            }, 300);
-                        });
-                    }
-                });
-            },
-            navigate(route, push = true) {
-                if (push) {
-                    history.pushState({}, '', '#' + route);
-                }
-                state.activeRoute = route;
-                this.handleRoute();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            },
-            handleRoute() {
-                const hash = window.location.hash.slice(1) || '/home';
-                state.activeRoute = hash;
-                
-                // Update active navbar styles
-                document.querySelectorAll('.nav-btn-desk, .nav-btn-mob').forEach(btn => {
-                    const btnRoute = btn.getAttribute('data-route');
-                    if (btnRoute === hash || (hash.startsWith('/country') && btnRoute === '/countries')) {
-                        btn.classList.add('text-neon-blue', 'bg-dark-600/60');
-                        btn.classList.remove('text-gray-400');
-                    } else {
-                        btn.classList.remove('text-neon-blue', 'bg-dark-600/60');
-                        btn.classList.add('text-gray-400');
-                    }
-                });
-
-                // Route matching
-                if (hash === '/home') {
-                    renderHome();
-                } else if (hash === '/countries') {
-                    renderCountries();
-                } else if (hash.startsWith('/country/')) {
-                    const countryCode = hash.split('/')[2];
-                    renderCountryDetail(countryCode);
-                } else if (hash === '/favorites') {
-                    renderFavorites();
-                } else if (hash === '/recent') {
-                    renderRecent();
-                } else if (hash === '/search') {
-                    renderSearch();
-                } else {
-                    renderHome();
-                }
-            }
-        };
-
-        // --- Data Fetching & Helpers ---
-        async function fetchCountries() {
-            if (state.countries.length > 0) return state.countries;
-            state.loadingCountries = true;
-            try {
-                const res = await fetch('https://iptv-org.github.io/api/countries.json');
-                state.countries = await res.json();
-            } catch (err) {
-                console.error('Failed to load countries:', err);
-                state.countries = [];
-            }
-            state.loadingCountries = false;
-            return state.countries;
-        }
-
-        async function fetchLogos() {
-            if (Object.keys(state.logos).length > 0) return state.logos;
-            try {
-                const res = await fetch('https://iptv-org.github.io/api/logos.json');
-                const data = await res.json();
-                data.forEach(item => {
-                    if (item.channel && item.logo) {
-                        state.logos[item.channel] = item.logo;
-                    }
-                });
-            } catch (err) {
-                console.error('Failed to load logos:', err);
-            }
-            return state.logos;
-        }
-
-        async function fetchCountryChannels(countryCode) {
-            if (currentPlaylistController) {
-                currentPlaylistController.abort();
-            }
-            currentPlaylistController = new AbortController();
-            
-            state.loadingChannels = true;
-            try {
-                const url = `https://iptv-org.github.io/iptv/countries/${countryCode.toLowerCase()}.m3u`;
-                const res = await fetch(url, { signal: currentPlaylistController.signal });
-                const m3uText = await res.text();
-                state.channels = parseM3U(m3uText, countryCode);
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error('Failed to load playlist:', err);
-                    state.channels = [];
-                }
-            }
-            state.loadingChannels = false;
-            return state.channels;
-        }
-
-        // Robust M3U Parser
-        function parseM3U(m3uText, countryCode) {
-            const lines = m3uText.split('\n');
-            const channels = [];
-            let currentChannel = {};
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line.startsWith('#EXTINF:')) {
-                    currentChannel = {};
-                    // Extract attributes
-                    const attrMatch = line.match(/tvg-id="([^"]*)"/);
-                    if (attrMatch) currentChannel.id = attrMatch[1];
-
-                    const nameMatch = line.match(/tvg-name="([^"]*)"/);
-                    if (nameMatch) currentChannel.name = nameMatch[1];
-
-                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
-                    if (logoMatch) currentChannel.logo = logoMatch[1];
-
-                    const groupMatch = line.match(/group-title="([^"]*)"/);
-                    if (groupMatch) currentChannel.group = groupMatch[1];
-
-                    const langMatch = line.match(/tvg-language="([^"]*)"/);
-                    if (langMatch) {
-                        currentChannel.language = langMatch[1];
-                    } else {
-                        currentChannel.language = 'General';
-                    }
-
-                    // Fallback channel name from comma
-                    const commaIndex = line.lastIndexOf(',');
-                    if (commaIndex !== -1 && !currentChannel.name) {
-                        currentChannel.name = line.substring(commaIndex + 1).trim();
-                    }
-                    if (!currentChannel.name) {
-                        currentChannel.name = 'Unknown Channel';
-                    }
-                    currentChannel.country = countryCode.toUpperCase();
-                } else if (line && !line.startsWith('#') && currentChannel.name) {
-                    currentChannel.url = line;
-                    // Check fallback logo
-                    if (!currentChannel.logo && state.logos[currentChannel.id]) {
-                        currentChannel.logo = state.logos[currentChannel.id];
-                    }
-                    if (!currentChannel.group) {
-                        currentChannel.group = 'General';
-                    }
-                    channels.push({ ...currentChannel });
-                    currentChannel = {};
-                }
-            }
-            return channels;
-        }
-
-        // --- Render Views ---
-
-        async function renderHome() {
-            const container = document.getElementById('appView');
-            container.innerHTML = `
-                <!-- Hero Section -->
-                <div class="relative rounded-3xl overflow-hidden glass-panel p-8 sm:p-12 mb-10 hero-gradient border border-white/10 shadow-2xl">
-                    <div class="relative z-10 max-w-2xl">
-                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-neon-blue/10 border border-neon-blue/20 text-neon-blue text-xs font-semibold mb-6">
-                            <span class="w-2 h-2 rounded-full bg-neon-blue animate-ping"></span>
-                            <span>Global OTT & Live Television Directory</span>
-                        </div>
-                        <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight mb-4 leading-tight">
-                            Watch Live TV From <span class="bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent">Around The World</span>
-                        </h1>
-                        <p class="text-gray-300 text-sm sm:text-base mb-8 leading-relaxed">
-                            Stream hundreds of free public television channels instantly. Explore global broadcasts, news, entertainment, and sports in stunning quality.
-                        </p>
-                        <div class="flex flex-wrap gap-4">
-                            <button onclick="router.navigate('/countries')" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-neon-blue to-neon-purple text-white font-semibold text-sm shadow-glow transition-all hover:scale-105">
-                                <i class="fa-solid fa-globe mr-2"></i>Explore Countries
-                            </button>
-                            <button onclick="router.navigate('/favorites')" class="px-6 py-3.5 rounded-2xl glass-card text-white font-semibold text-sm transition-all hover:bg-dark-600">
-                                <i class="fa-solid fa-heart mr-2 text-pink-500"></i>My Favorites
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Floating Globe / Decorative Element -->
-                    <div class="absolute right-6 -bottom-10 hidden lg:block opacity-40 pointer-events-none">
-                        <div class="w-80 h-80 rounded-full border border-neon-blue/30 flex items-center justify-center animate-spin" style="animation-duration: 40s;">
-                            <div class="w-60 h-60 rounded-full border border-neon-purple/40 flex items-center justify-center">
-                                <div class="w-40 h-40 rounded-full border border-neon-pink/50"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Categories / Recent Section -->
-                <div class="mb-10">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-white flex items-center">
-                            <i class="fa-solid fa-fire text-neon-pink mr-2.5"></i>Popular Countries
-                        </h2>
-                        <button onclick="router.navigate('/countries')" class="text-xs font-semibold text-neon-blue hover:underline">
-                            View All <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                    <div id="homeCountriesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        <!-- Skeletons -->
-                        ${Array(6).fill(0).map(() => `
-                            <div class="glass-card rounded-2xl p-4 flex flex-col items-center justify-center h-32 skeleton"></div>
-                        `).join('')}
-                    </div>
-                </div>
-
-                <!-- Recent Channels Preview -->
-                ${state.recent.length > 0 ? `
-                <div class="mb-10">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-white flex items-center">
-                            <i class="fa-solid fa-clock-rotate-left text-neon-blue mr-2.5"></i>Recently Watched
-                        </h2>
-                        <button onclick="router.navigate('/recent')" class="text-xs font-semibold text-neon-blue hover:underline">
-                            View All <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        ${state.recent.slice(0, 4).map(ch => renderChannelCardHTML(ch)).join('')}
-                    </div>
-                </div>` : ''}
-            `;
-
-            // Fetch countries and populate popular ones (e.g., US, IN, GB, FR, DE, JP)
-            const countries = await fetchCountries();
-            await fetchLogos();
-            const popularCodes = ['us', 'in', 'gb', 'fr', 'de', 'jp'];
-            const popularCountries = countries.filter(c => popularCodes.includes(c.code.toLowerCase()));
-            
-            const grid = document.getElementById('homeCountriesGrid');
-            if (grid) {
-                grid.innerHTML = popularCountries.map(c => `
-                    <div onclick="router.navigate('/country/${c.code.toLowerCase()}')" class="glass-card rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer group text-center">
-                        <div class="text-4xl mb-3 transform group-hover:scale-110 transition-transform">
-                            <img src="https://flagcdn.com/w80/${c.code.toLowerCase()}.png" alt="${c.name}" class="w-12 h-8 object-cover rounded shadow-md" onerror="this.src='https://images.unsplash.com/photo-1593784991095-a205069470b6?w=100&auto=format&fit=crop&q=60'">
-                        </div>
-                        <h3 class="font-bold text-white text-sm line-clamp-1 mb-1">${c.name}</h3>
-                        <span class="text-[10px] text-gray-400 uppercase tracking-wider">${c.code}</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        async function renderCountries() {
-            const container = document.getElementById('appView');
-            container.innerHTML = `
-                <div class="mb-8">
-                    <h1 class="text-3xl font-extrabold text-white mb-2">Select Country</h1>
-                    <p class="text-gray-400 text-sm">Choose a country to browse available live television streams.</p>
-                </div>
-                
-                <div class="mb-6 relative">
-                    <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="countrySearchInput" placeholder="Filter countries..." 
-                           class="w-full sm:w-80 bg-dark-700 border border-white/10 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-neon-blue transition-all">
-                </div>
-
-                <div id="countriesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    ${Array(15).fill(0).map(() => `<div class="glass-card rounded-2xl p-5 h-36 skeleton"></div>`).join('')}
-                </div>
-            `;
-
-            const countries = await fetchCountries();
-            populateCountriesGrid(countries);
-
-            document.getElementById('countrySearchInput').addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                const filtered = countries.filter(c => c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query));
-                populateCountriesGrid(filtered);
-            });
-        }
-
-        function populateCountriesGrid(countries) {
-            const grid = document.getElementById('countriesGrid');
-            if (!grid) return;
-            if (countries.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-gray-400">No countries found.</div>`;
-                return;
-            }
-            grid.innerHTML = countries.map(c => `
-                <div onclick="router.navigate('/country/${c.code.toLowerCase()}')" class="glass-card rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer group text-center relative overflow-hidden">
-                    <div class="absolute top-2 right-2 text-white/20 group-hover:text-neon-blue transition-colors">
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </div>
-                    <div class="mb-3 transform group-hover:scale-110 transition-transform">
-                        <img src="https://flagcdn.com/w80/${c.code.toLowerCase()}.png" alt="${c.name}" class="w-14 h-9 object-cover rounded-lg shadow-lg" onerror="this.src='https://images.unsplash.com/photo-1593784991095-a205069470b6?w=100&auto=format&fit=crop&q=60'">
-                    </div>
-                    <h3 class="font-bold text-white text-sm line-clamp-1 mb-1">${c.name}</h3>
-                    <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">${c.code}</span>
-                </div>
-            `).join('');
-        }
-
-        async function renderCountryDetail(countryCode) {
-            const container = document.getElementById('appView');
-            const countries = await fetchCountries();
-            const country = countries.find(c => c.code.toLowerCase() === countryCode.toLowerCase()) || { name: countryCode.toUpperCase(), code: countryCode };
-
-            container.innerHTML = `
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="router.navigate('/countries')" class="w-10 h-10 rounded-xl bg-dark-700 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all">
-                            <i class="fa-solid fa-arrow-left"></i>
-                        </button>
-                        <div class="flex items-center space-x-3">
-                            <img src="https://flagcdn.com/w80/${countryCode.toLowerCase()}.png" alt="" class="w-12 h-8 object-cover rounded shadow-md" onerror="this.style.display='none'">
-                            <div>
-                                <h1 class="text-2xl sm:text-3xl font-extrabold text-white">${country.name}</h1>
-                                <p id="channelCountLabel" class="text-xs text-gray-400">Loading channels...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="relative flex-1 sm:w-64">
-                            <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="channelSearch" placeholder="Search channels..." 
-                                   class="w-full bg-dark-700 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-neon-blue">
-                        </div>
-                        <select id="categoryFilter" class="bg-dark-700 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-neon-blue">
-                            <option value="">All Categories</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="channelsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    ${Array(8).fill(0).map(() => `<div class="glass-card rounded-2xl p-4 h-32 skeleton"></div>`).join('')}
-                </div>
-            `;
-
-            await fetchLogos();
-            const channels = await fetchCountryChannels(countryCode);
-            state.channels = channels;
-            
-            updateChannelCount(channels.length);
-            populateCategoryFilter(channels);
-            renderChannelsGrid(channels);
-
-            // Channel Filter & Search Events
-            const searchInput = document.getElementById('channelSearch');
-            const categorySelect = document.getElementById('categoryFilter');
-
-            const filterHandler = () => {
-                const query = searchInput.value.toLowerCase();
-                const cat = categorySelect.value;
-                const filtered = channels.filter(ch => {
-                    const matchQuery = ch.name.toLowerCase().includes(query) || (ch.group && ch.group.toLowerCase().includes(query));
-                    const matchCat = cat === '' || ch.group === cat;
-                    return matchQuery && matchCat;
-                });
-                renderChannelsGrid(filtered);
-            };
-
-            searchInput.addEventListener('input', filterHandler);
-            categorySelect.addEventListener('change', filterHandler);
-        }
-
-        function updateChannelCount(count) {
-            const el = document.getElementById('channelCountLabel');
-            if (el) el.textContent = `${count} channels available`;
-        }
-
-        function populateCategoryFilter(channels) {
-            const select = document.getElementById('categoryFilter');
-            if (!select) return;
-            const groups = [...new Set(channels.map(c => c.group || 'General'))].sort();
-            groups.forEach(g => {
-                const opt = document.createElement('option');
-                opt.value = g;
-                opt.textContent = g;
-                select.appendChild(opt);
-            });
-        }
-
-        function renderChannelsGrid(channels) {
-            const grid = document.getElementById('channelsGrid');
-            if (!grid) return;
-            if (channels.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-gray-400">No channels found matching your criteria.</div>`;
-                return;
-            }
-            grid.innerHTML = channels.map(ch => renderChannelCardHTML(ch)).join('');
-        }
-
-        function renderChannelCardHTML(ch) {
-            const isFav = state.favorites.some(f => f.url === ch.url || (f.name === ch.name && f.country === ch.country));
-            const safeChannelStr = encodeURIComponent(JSON.stringify(ch));
-            return `
-                <div class="glass-card rounded-2xl p-4 flex flex-col justify-between relative group">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-dark-700 border border-white/10 flex items-center justify-center overflow-hidden p-1 bg-white/5">
-                            <img src="${ch.logo || 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=100&auto=format&fit=crop&q=60'}" alt="" class="w-full h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1593784991095-a205069470b6?w=100&auto=format&fit=crop&q=60'">
-                        </div>
-                        <div class="flex items-center space-x-1.5">
-                            <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center">
-                                <span class="w-1 h-1 bg-red-500 rounded-full animate-pulse mr-1"></span> LIVE
-                            </span>
-                            <button onclick='toggleFavorite(event, decodeURIComponent("${safeChannelStr}"))' class="w-8 h-8 rounded-lg bg-dark-700/80 border border-white/10 flex items-center justify-center text-gray-300 hover:text-pink-500 transition-colors">
-                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h3 class="font-bold text-white text-sm line-clamp-1 mb-1">${ch.name}</h3>
-                        <div class="flex items-center space-x-2 text-[11px] text-gray-400">
-                            <span class="px-2 py-0.5 rounded bg-white/5 border border-white/5">${ch.group || 'General'}</span>
-                            <span>•</span>
-                            <span class="uppercase">${ch.country}</span>
-                        </div>
-                    </div>
-
-                    <button onclick='openVideoPlayer(decodeURIComponent("${safeChannelStr}"))' class="w-full py-2.5 rounded-xl bg-gradient-to-r from-neon-blue/80 to-neon-purple/80 hover:from-neon-blue hover:to-neon-purple text-white text-xs font-semibold shadow-glow transition-all flex items-center justify-center">
-                        <i class="fa-solid fa-play mr-2"></i>Play Stream
-                    </button>
-                </div>
-            `;
-        }
-
-        async function renderFavorites() {
-            const container = document.getElementById('appView');
-            container.innerHTML = `
-                <div class="mb-8">
-                    <h1 class="text-3xl font-extrabold text-white mb-2">Favorite Channels</h1>
-                    <p class="text-gray-400 text-sm">Quick access to your preferred television streams.</p>
-                </div>
-                <div id="favoritesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <!-- Dynamic -->
-                </div>
-            `;
-            const grid = document.getElementById('favoritesGrid');
-            if (state.favorites.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-20 text-center">
-                        <div class="w-16 h-16 rounded-2xl bg-dark-700 border border-white/10 flex items-center justify-center text-gray-500 text-2xl mx-auto mb-4">
-                            <i class="fa-regular fa-heart"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white mb-1">No favorites yet</h3>
-                        <p class="text-sm text-gray-400 mb-6">Click the heart icon on any channel card to save it here.</p>
-                        <button onclick="router.navigate('/countries')" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-neon-blue to-neon-purple text-white font-medium text-xs shadow-glow">
-                            Browse Channels
-                        </button>
-                    </div>
-                `;
-            } else {
-                grid.innerHTML = state.favorites.map(ch => renderChannelCardHTML(ch)).join('');
-            }
-        }
-
-        async function renderRecent() {
-            const container = document.getElementById('appView');
-            container.innerHTML = `
-                <div class="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-extrabold text-white mb-2">Recently Watched</h1>
-                        <p class="text-gray-400 text-sm">Channels you have opened recently.</p>
-                    </div>
-                    ${state.recent.length > 0 ? `
-                        <button onclick="clearRecent()" class="px-4 py-2 rounded-xl bg-dark-700 border border-white/10 text-gray-300 hover:text-white text-xs font-medium transition-all">
-                            Clear History
-                        </button>` : ''}
-                </div>
-                <div id="recentGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <!-- Dynamic -->
-                </div>
-            `;
-            const grid = document.getElementById('recentGrid');
-            if (state.recent.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-20 text-center">
-                        <div class="w-16 h-16 rounded-2xl bg-dark-700 border border-white/10 flex items-center justify-center text-gray-500 text-2xl mx-auto mb-4">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white mb-1">No watch history</h3>
-                        <p class="text-sm text-gray-400 mb-6">Channels you watch will appear here automatically.</p>
-                        <button onclick="router.navigate('/countries')" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-neon-blue to-neon-purple text-white font-medium text-xs shadow-glow">
-                            Explore Channels
-                        </button>
-                    </div>
-                `;
-            } else {
-                grid.innerHTML = state.recent.map(ch => renderChannelCardHTML(ch)).join('');
-            }
-        }
-
-        async function renderSearch() {
-            const container = document.getElementById('appView');
-            const query = state.searchQuery;
-
-            container.innerHTML = `
-                <div class="mb-8">
-                    <h1 class="text-3xl font-extrabold text-white mb-2">Search Results</h1>
-                    <p class="text-gray-400 text-sm">Showing results for "<span class="text-neon-blue font-semibold">${query}</span>"</p>
-                </div>
-                <div id="searchResultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    ${Array(8).fill(0).map(() => `<div class="glass-card rounded-2xl p-4 h-32 skeleton"></div>`).join('')}
-                </div>
-            `;
-
-            const countries = await fetchCountries();
-            await fetchLogos();
-
-            // Filter matching countries
-            const matchingCountries = countries.filter(c => c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query));
-            
-            // If user typed a country name or code, load channels for top matching country, or load default sample
-            let channels = [];
-            if (matchingCountries.length > 0) {
-                // Fetch channels for the first matched country
-                channels = await fetchCountryChannels(matchingCountries[0].code);
-            } else {
-                // Fetch sample from US/IN to search channel names
-                channels = await fetchCountryChannels('us');
-            }
-
-            const matchingChannels = channels.filter(ch => 
-                ch.name.toLowerCase().includes(query) || 
-                (ch.group && ch.group.toLowerCase().includes(query)) ||
-                (ch.language && ch.language.toLowerCase().includes(query))
-            );
-
-            const grid = document.getElementById('searchResultsGrid');
-            if (matchingChannels.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-20 text-center">
-                        <div class="w-16 h-16 rounded-2xl bg-dark-700 border border-white/10 flex items-center justify-center text-gray-500 text-2xl mx-auto mb-4">
-                            <i class="fa-solid fa-search"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white mb-1">No matching channels found</h3>
-                        <p class="text-sm text-gray-400">Try searching for another country, channel name, or category.</p>
-                    </div>
-                `;
-            } else {
-                grid.innerHTML = matchingChannels.map(ch => renderChannelCardHTML(ch)).join('');
-            }
-        }
-
-        // --- Favorites & Recent Management ---
-
-        function toggleFavorite(event, channelJson) {
-            event.stopPropagation();
-            const channel = typeof channelJson === 'string' ? JSON.parse(channelJson) : channelJson;
-            const index = state.favorites.findIndex(f => f.url === channel.url || (f.name === channel.name && f.country === channel.country));
-            
-            if (index !== -1) {
-                state.favorites.splice(index, 1);
-            } else {
-                state.favorites.push(channel);
-            }
-            localStorage.setItem('hrry_tv_favorites', JSON.stringify(state.favorites));
-            
-            // Re-render current view or buttons
-            router.handleRoute();
-            updatePlayerFavoriteIcon();
-        }
-
-        function addRecentChannel(channel) {
-            state.recent = state.recent.filter(f => f.url !== channel.url && !(f.name === channel.name && f.country === channel.country));
-            state.recent.unshift(channel);
-            if (state.recent.length > 20) state.recent.pop();
-            localStorage.setItem('hrry_tv_recent', JSON.stringify(state.recent));
-        }
-
-        function clearRecent() {
-            state.recent = [];
-            localStorage.removeItem('hrry_tv_recent');
-            renderRecent();
-        }
-
-        // --- Video Player Controller ---
-
-        function openVideoPlayer(channelJson) {
-            const channel = typeof channelJson === 'string' ? JSON.parse(channelJson) : channelJson;
-            state.currentChannel = channel;
-            addRecentChannel(channel);
-
-            const modal = document.getElementById('videoPlayerModal');
-            const video = document.getElementById('videoElement');
-            const logoImg = document.getElementById('playerChannelLogo');
-            const nameEl = document.getElementById('playerChannelName');
-            const metaEl = document.getElementById('playerChannelMeta');
-            const extLink = document.getElementById('externalStreamLink');
-            
-            logoImg.src = channel.logo || 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=100&auto=format&fit=crop&q=60';
-            nameEl.textContent = channel.name;
-            metaEl.textContent = `${channel.country || 'GLOBAL'} • ${channel.group || 'Live TV'}`;
-            extLink.href = channel.url;
-
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-
-            updatePlayerFavoriteIcon();
-            initStream(channel.url);
-        }
-
-        function closeVideoPlayer() {
-            const modal = document.getElementById('videoPlayerModal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
-            }
-            const video = document.getElementById('videoElement');
-            video.pause();
-            video.src = '';
-
-            // Refresh recent view if currently on it
-            if (state.activeRoute === '/recent') {
-                renderRecent();
-            }
-        }
-
-        function initStream(streamUrl) {
-            const video = document.getElementById('videoElement');
-            const loading = document.getElementById('playerLoading');
-            const errorView = document.getElementById('playerError');
-
-            loading.classList.remove('hidden');
-            errorView.classList.add('hidden');
-            video.classList.remove('hidden');
-
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
-            }
-
-            if (Hls.isSupported() && streamUrl.includes('.m3u8')) {
-                hlsInstance = new Hls({
-                    debug: false,
-                    xhrSetup: function (xhr, url) {
-                        // Handle potential CORS or headers if needed
-                    }
-                });
-                hlsInstance.loadSource(streamUrl);
-                hlsInstance.attachMedia(video);
-                
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    loading.classList.add('hidden');
-                    video.play().catch(e => console.log("Autoplay prevented:", e));
-                });
-
-                hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                console.error("HLS Network error:", data);
-                                hlsInstance.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.error("HLS Media error:", data);
-                                hlsInstance.recoverMediaError();
-                                break;
-                            default:
-                                showStreamError();
-                                break;
-                        }
-                    }
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl') || streamUrl.endsWith('.mp4') || streamUrl.endsWith('.webm')) {
-                // Native HLS support (Safari)
-                video.src = streamUrl;
-                video.addEventListener('loadedmetadata', () => {
-                    loading.classList.add('hidden');
-                    video.play().catch(e => console.log("Autoplay prevented:", e));
-                });
-                video.addEventListener('error', () => {
-                    showStreamError();
-                });
-            } else {
-                // Fallback direct load
-                video.src = streamUrl;
-                video.play().then(() => {
-                    loading.classList.add('hidden');
-                }).catch(() => {
-                    showStreamError();
-                });
-            }
-
-            // Timeout failsafe in case stream hangs on loading
-            setTimeout(() => {
-                if (!video.currentTime && !errorView.classList.contains('hidden') === false && loading.classList.contains('hidden') === false) {
-                    // Check if actually playing
-                }
-            }, 8000);
-        }
-
-        function showStreamError() {
-            const loading = document.getElementById('playerLoading');
-            const errorView = document.getElementById('playerError');
-            const video = document.getElementById('videoElement');
-
-            loading.classList.add('hidden');
-            video.classList.add('hidden');
-            errorView.classList.remove('hidden');
-
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
-            }
-        }
-
-        function retryStream() {
-            if (state.currentChannel && state.currentChannel.url) {
-                initStream(state.currentChannel.url);
-            }
-        }
-
-        function togglePlayerFavorite() {
-            if (!state.currentChannel) return;
-            toggleFavorite({ stopPropagation: () => {} }, state.currentChannel);
-            updatePlayerFavoriteIcon();
-        }
-
-        function updatePlayerFavoriteIcon() {
-            if (!state.currentChannel) return;
-            const btn = document.getElementById('playerFavBtn');
-            if (!btn) return;
-            const isFav = state.favorites.some(f => f.url === state.currentChannel.url || (f.name === state.currentChannel.name && f.country === state.currentChannel.country));
-            btn.innerHTML = `<i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-base"></i>`;
-        }
-
-        // --- Mobile Search Drawer Toggle ---
-        function toggleMobileSearch() {
-            const searchContainer = document.getElementById('mobileSearchContainer');
-            searchContainer.classList.toggle('hidden');
-            if (!searchContainer.classList.contains('hidden')) {
-                document.getElementById('mobileSearchInput').focus();
-            }
-        }
-
-        // --- Initialization on DOM Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            router.init();
-        });
-    </script>
-</body>
-</html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
+<meta name="theme-color" content="#0b041c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Hrry TV – Live TV From Around The World</title>
+<meta name="description" content="Hrry TV – watch live TV channels from every country in 16:9 HD.">
+<link rel="icon" href="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png">
+<link rel="apple-touch-icon" href="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;font-family:"Plus Jakarta Sans",-apple-system,Roboto,sans-serif;color:#fff;background:#090316 radial-gradient(circle at 10% 5%,rgba(255,0,127,.22),transparent 45%),radial-gradient(circle at 90% 10%,rgba(0,210,255,.22),transparent 45%),linear-gradient(180deg,#0b041c,#110629 50%,#080214);background-attachment:fixed;overflow-x:hidden;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+@keyframes sp{to{transform:rotate(360deg)}}
+header,main{max-width:1060px;margin:0 auto;padding:12px 14px 6px}
+header{position:sticky;top:0;z-index:100}
+.island{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-radius:999px;background:linear-gradient(135deg,rgba(32,12,64,.94),rgba(14,22,56,.94));border:1.5px solid rgba(255,255,255,.22);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:36px;height:36px;border-radius:11px;object-fit:cover;border:1.5px solid #00f5d4}
+.grad{background:linear-gradient(90deg,#ffbe0b,#ff007f,#00f5d4,#00bbf9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand b{font-size:17px;font-weight:800;letter-spacing:.4px}
+#count{font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:999px;color:#042f2e;background:linear-gradient(135deg,#00f59b,#00d2ff)}
+.player-wrap,.tools{display:none;margin-bottom:12px}
+.player-wrap.on{display:block}.tools.on{display:flex}
+.player{position:relative;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;border:2px solid rgba(0,245,212,.55);box-shadow:0 12px 30px rgba(0,0,0,.55)}
+.player video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+#wm{position:absolute;z-index:2;right:12px;top:12px;width:clamp(28px,4.5vw,42px);opacity:.65;pointer-events:none}
+.ov{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px;background:rgba(9,3,22,.88);z-index:3}
+.ov.show{display:flex}.ov p{color:#e2e8f0;font-size:13px}
+.spin{width:38px;height:38px;border:3.5px solid rgba(255,255,255,.15);border-top-color:#ff007f;border-right-color:#00f5d4;border-radius:50%;animation:sp .75s linear infinite}
+.tools{flex-direction:column;gap:10px;padding:14px 16px;border-radius:20px;background:linear-gradient(145deg,rgba(38,16,72,.9),rgba(16,22,54,.9));border:1.5px solid rgba(255,255,255,.2)}
+.tools h1{font-size:clamp(16px,3.5vw,20px);font-weight:800;background:linear-gradient(90deg,#fff,#ffbe0b,#00f5d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;padding:5px 10px;border-radius:99px;background:linear-gradient(135deg,#ff0055,#ff7700)}
+.badge i{width:6px;height:6px;border-radius:50%;background:#00ff87}
+.pill{border:1px solid rgba(255,255,255,.26);background:linear-gradient(135deg,rgba(0,187,249,.3),rgba(131,56,236,.35));color:#fff;font:800 12px inherit;font-family:inherit;padding:6px 13px;border-radius:99px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pill:active{transform:scale(.96)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 14px;padding:12px 15px;border-radius:18px;background:linear-gradient(90deg,rgba(255,0,127,.25),rgba(131,56,236,.25),rgba(0,187,249,.25));border:1px solid rgba(255,255,255,.22)}
+.bar h2{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
+.bar h2 i{color:#ffbe0b}
+.bar input,.bar select{background:rgba(9,3,22,.75);border:1px solid rgba(255,255,255,.24);color:#fff;font:600 13px inherit;font-family:inherit;padding:9px 13px;border-radius:12px;outline:none}
+.bar input{flex:1;min-width:150px;max-width:280px;margin-left:auto}
+.bar select{max-width:190px}.bar select option{background:#110629}
+.bar input:focus{border-color:#00f5d4}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{padding:14px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:12px;border:1.5px solid;box-shadow:0 8px 20px rgba(0,0,0,.3);transition:transform .18s}
+.card:active{transform:scale(.98)}
+.t0{background:linear-gradient(145deg,rgba(70,15,60,.92),rgba(28,12,54,.95));border-color:rgba(255,0,127,.45)}
+.t1{background:linear-gradient(145deg,rgba(10,55,52,.92),rgba(12,28,54,.95));border-color:rgba(0,245,155,.45)}
+.t2{background:linear-gradient(145deg,rgba(68,36,12,.92),rgba(48,12,38,.95));border-color:rgba(255,190,11,.45)}
+.t3{background:linear-gradient(145deg,rgba(14,42,68,.92),rgba(32,16,60,.95));border-color:rgba(0,210,255,.45)}
+.card.sel{border:2px solid #00f5d4;box-shadow:0 0 18px rgba(0,245,212,.28)}
+.logo{flex:none;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:contain;padding:4px}
+.info{flex:1;min-width:0}
+.info h3{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info small{color:#cbd5e1;font-size:12px}
+.fav{background:none;border:0;color:#cbd5e1;font-size:18px;cursor:pointer;padding:6px}
+.fav.on{color:#ff007f}
+.empty{grid-column:1/-1;text-align:center;padding:36px 16px;border:1.5px dashed rgba(255,255,255,.25);border-radius:20px;background:rgba(25,10,48,.8)}
+.empty b{display:block;font-size:17px;margin-bottom:6px;color:#ffbe0b}
+.sk{height:80px;border-radius:20px;background:rgba(255,255,255,.07)}
+</style></head><body>
+<header><div class="island">
+  <div class="brand"><img src="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png" alt="Hrry TV"><b class="grad">HRRY TV</b></div>
+  <span id="count">Loading…</span>
+</div></header>
+<main>
+  <section class="player-wrap" id="pw"><div class="player">
+    <video id="v" controls playsinline webkit-playsinline preload="none"></video>
+    <img id="wm" src="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png" alt="">
+    <div class="ov" id="ov"></div>
+  </div></section>
+  <section class="tools" id="tools"></section>
+  <div class="bar">
+    <h2><i class="fas fa-tv"></i> Live Channels</h2>
+    <select id="cty" aria-label="Country"></select>
+    <button class="pill" id="favBtn"><i class="fas fa-heart"></i> Favorites</button>
+    <input id="q" type="search" placeholder="Search channels…">
+  </div>
+  <section class="grid" id="grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div></section>
+</main>
+<script>
+(()=>{
+const $=i=>document.getElementById(i),v=$('v'),ov=$('ov'),grid=$('grid'),cty=$('cty');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(_){return d}},set(k,x){try{localStorage.setItem(k,JSON.stringify(x))}catch(_){}}};
+let list=[],cur=null,hls=null,favs=ls.get('hrry_favs',[]),onlyFav=false,code=ls.get('hrry_cc','IN');
+const api=async p=>{const r=await fetch(p);if(!r.ok)throw 0;return r.json()};
+const fk=c=>c.n+'|'+code;
+
+function overlay(h){ov.innerHTML=h;ov.classList.toggle('show',!!h)}
+function play(c){
+  cur=c;$('pw').classList.add('on');$('tools').classList.add('on');
+  overlay('<div class="spin"></div><p>Loading stream…</p>');
+  if(hls){hls.destroy();hls=null}
+  const ok=()=>{overlay('');v.play().catch(()=>{v.muted=true;v.play().catch(()=>{})})};
+  const fail=()=>overlay('<p><b>Stream unavailable</b><br>Try another channel or reload.</p>');
+  if(window.Hls&&Hls.isSupported()){
+    hls=new Hls({lowLatencyMode:true});hls.loadSource(c.u);hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,ok);
+    hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)fail()});
+  }else{v.src=c.u;v.onloadedmetadata=ok;v.onerror=fail}
+  $('tools').innerHTML=`<div class="row" style="justify-content:space-between"><h1>${esc(c.n)}</h1><span class="badge"><i></i>LIVE</span></div>
+  <div class="row"><button class="pill" id="rl"><i class="fas fa-rotate"></i> Reload</button><button class="pill" id="fs"><i class="fas fa-expand"></i> Fullscreen</button></div>`;
+  $('rl').onclick=()=>play(cur);
+  $('fs').onclick=()=>{const e=v.parentElement;(e.requestFullscreen||v.webkitEnterFullscreen||(()=>{})).call(e.requestFullscreen?e:v)};
+  render();window.scrollTo({top:0,behavior:'smooth'});
+}
+function render(){
+  const q=$('q').value.trim().toLowerCase();
+  const a=list.filter(c=>(!onlyFav||favs.includes(fk(c)))&&(!q||(c.n+' '+c.g).toLowerCase().includes(q)));
+  $('count').textContent=a.length+' Channels';
+  if(!a.length){grid.innerHTML='<div class="empty"><b>No channels found</b>Try another search or country.</div>';return}
+  grid.innerHTML=a.map((c,i)=>{const f=favs.includes(fk(c));
+    return `<div class="card t${i%4}${cur&&cur.u===c.u?' sel':''}" data-i="${list.indexOf(c)}">
+    <div class="logo">${c.l?`<img loading="lazy" src="${esc(c.l)}" alt="" onerror="this.remove()">`:'<i class="fas fa-tv"></i>'}</div>
+    <div class="info"><h3>${esc(c.n)}</h3><small>${esc(c.g)}</small></div>
+    <button class="fav${f?' on':''}" data-f="${list.indexOf(c)}" aria-label="Favorite"><i class="fa${f?'s':'r'} fa-heart"></i></button></div>`}).join('');
+}
+grid.onclick=e=>{
+  const f=e.target.closest('[data-f]');
+  if(f){const c=list[f.dataset.f],k=fk(c);favs=favs.includes(k)?favs.filter(x=>x!==k):[...favs,k];ls.set('hrry_favs',favs);render();return}
+  const d=e.target.closest('[data-i]');if(d)play(list[d.dataset.i]);
+};
+async function load(){
+  grid.innerHTML='<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+  try{list=await api('/api/channels?c='+encodeURIComponent(code))}catch(_){list=[]}
+  render();
+}
+$('q').oninput=render;
+$('favBtn').onclick=function(){onlyFav=!onlyFav;this.style.background=onlyFav?'linear-gradient(135deg,#ff007f,#8338ec)':'';render()};
+cty.onchange=()=>{code=cty.value;ls.set('hrry_cc',code);load()};
+(async()=>{
+  try{const cs=await api('/api/countries');
+    cty.innerHTML=cs.sort((a,b)=>a.n.localeCompare(b.n)).map(c=>`<option value="${esc(c.c)}"${c.c===code?' selected':''}>${esc(c.f||'')} ${esc(c.n)}</option>`).join('')}catch(_){}
+  load();
+})();
+})();
+</script></body></html>
