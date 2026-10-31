@@ -2,142 +2,210 @@
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
-<meta name="theme-color" content="#0b041c">
+<meta name="theme-color" content="#12052c">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Hrry TV – Live TV From Around The World</title>
-<meta name="description" content="Hrry TV – watch live TV channels from every country in 16:9 HD.">
+<meta name="description" content="Hrry TV – watch live TV channels from every country in HD.">
 <link rel="icon" href="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png">
 <link rel="apple-touch-icon" href="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 <style>
+:root{--sp:cubic-bezier(.22,1,.36,1);--rb:linear-gradient(90deg,#ff007f,#ff7700,#ffbe0b,#00f59b,#00d2ff,#8338ec,#ff007f)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{min-height:100vh;font-family:"Plus Jakarta Sans",-apple-system,Roboto,sans-serif;color:#fff;background:#090316 radial-gradient(circle at 10% 5%,rgba(255,0,127,.22),transparent 45%),radial-gradient(circle at 90% 10%,rgba(0,210,255,.22),transparent 45%),linear-gradient(180deg,#0b041c,#110629 50%,#080214);background-attachment:fixed;overflow-x:hidden;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+html{scroll-behavior:smooth}
+body{min-height:100vh;font-family:"Plus Jakarta Sans",-apple-system,sans-serif;color:#fff;background:#080218 radial-gradient(circle at 8% 12%,rgba(255,0,128,.34),transparent 38%),radial-gradient(circle at 92% 14%,rgba(0,229,255,.34),transparent 40%),radial-gradient(circle at 85% 78%,rgba(255,165,0,.26),transparent 42%),radial-gradient(circle at 15% 84%,rgba(0,255,149,.28),transparent 42%),linear-gradient(155deg,#09021a,#150534 50%,#070317);background-attachment:fixed;overflow-x:hidden;padding-bottom:calc(35px + env(safe-area-inset-bottom))}
+.orb{position:fixed;border-radius:50%;filter:blur(85px);z-index:-1;pointer-events:none;opacity:.6;animation:fl 12s infinite alternate ease-in-out}
+.o1{width:310px;height:310px;background:linear-gradient(135deg,#ff007f,#7928ca,#ffb703);top:-80px;left:-80px}
+.o2{width:300px;height:300px;background:linear-gradient(135deg,#00f5d4,#00bbf9,#9b5de5);bottom:8%;right:-75px;animation-delay:-4s}
+@keyframes fl{to{transform:translate(28px,32px) scale(1.14)}}
+@keyframes rf{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+@keyframes pg{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
 @keyframes sp{to{transform:rotate(360deg)}}
-header,main{max-width:1060px;margin:0 auto;padding:12px 14px 6px}
+@keyframes pi{from{opacity:0;transform:translateY(12px) scale(.985)}}
+header,main{max-width:1120px;margin:0 auto;padding:14px 16px 8px}
 header{position:sticky;top:0;z-index:100}
-.island{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-radius:999px;background:linear-gradient(135deg,rgba(32,12,64,.94),rgba(14,22,56,.94));border:1.5px solid rgba(255,255,255,.22);box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.brand{display:flex;align-items:center;gap:10px}
-.brand img{width:36px;height:36px;border-radius:11px;object-fit:cover;border:1.5px solid #00f5d4}
-.grad{background:linear-gradient(90deg,#ffbe0b,#ff007f,#00f5d4,#00bbf9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.brand b{font-size:17px;font-weight:800;letter-spacing:.4px}
-#count{font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:999px;color:#042f2e;background:linear-gradient(135deg,#00f59b,#00d2ff)}
-.player-wrap,.tools{display:none;margin-bottom:12px}
-.player-wrap.on{display:block}.tools.on{display:flex}
-.player{position:relative;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;border:2px solid rgba(0,245,212,.55);box-shadow:0 12px 30px rgba(0,0,0,.55)}
-.player video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
-#wm{position:absolute;z-index:2;right:12px;top:12px;width:clamp(28px,4.5vw,42px);opacity:.65;pointer-events:none}
-.ov{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px;background:rgba(9,3,22,.88);z-index:3}
-.ov.show{display:flex}.ov p{color:#e2e8f0;font-size:13px}
-.spin{width:38px;height:38px;border:3.5px solid rgba(255,255,255,.15);border-top-color:#ff007f;border-right-color:#00f5d4;border-radius:50%;animation:sp .75s linear infinite}
-.tools{flex-direction:column;gap:10px;padding:14px 16px;border-radius:20px;background:linear-gradient(145deg,rgba(38,16,72,.9),rgba(16,22,54,.9));border:1.5px solid rgba(255,255,255,.2)}
-.tools h1{font-size:clamp(16px,3.5vw,20px);font-weight:800;background:linear-gradient(90deg,#fff,#ffbe0b,#00f5d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.row{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
-.badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;padding:5px 10px;border-radius:99px;background:linear-gradient(135deg,#ff0055,#ff7700)}
-.badge i{width:6px;height:6px;border-radius:50%;background:#00ff87}
-.pill{border:1px solid rgba(255,255,255,.26);background:linear-gradient(135deg,rgba(0,187,249,.3),rgba(131,56,236,.35));color:#fff;font:800 12px inherit;font-family:inherit;padding:6px 13px;border-radius:99px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.pill:active{transform:scale(.96)}
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 14px;padding:12px 15px;border-radius:18px;background:linear-gradient(90deg,rgba(255,0,127,.25),rgba(131,56,236,.25),rgba(0,187,249,.25));border:1px solid rgba(255,255,255,.22)}
-.bar h2{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
-.bar h2 i{color:#ffbe0b}
-.bar input,.bar select{background:rgba(9,3,22,.75);border:1px solid rgba(255,255,255,.24);color:#fff;font:600 13px inherit;font-family:inherit;padding:9px 13px;border-radius:12px;outline:none}
-.bar input{flex:1;min-width:150px;max-width:280px;margin-left:auto}
-.bar select{max-width:190px}.bar select option{background:#110629}
-.bar input:focus{border-color:#00f5d4}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.card{padding:14px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:12px;border:1.5px solid;box-shadow:0 8px 20px rgba(0,0,0,.3);transition:transform .18s}
-.card:active{transform:scale(.98)}
-.t0{background:linear-gradient(145deg,rgba(70,15,60,.92),rgba(28,12,54,.95));border-color:rgba(255,0,127,.45)}
-.t1{background:linear-gradient(145deg,rgba(10,55,52,.92),rgba(12,28,54,.95));border-color:rgba(0,245,155,.45)}
-.t2{background:linear-gradient(145deg,rgba(68,36,12,.92),rgba(48,12,38,.95));border-color:rgba(255,190,11,.45)}
-.t3{background:linear-gradient(145deg,rgba(14,42,68,.92),rgba(32,16,60,.95));border-color:rgba(0,210,255,.45)}
-.card.sel{border:2px solid #00f5d4;box-shadow:0 0 18px rgba(0,245,212,.28)}
-.logo{flex:none;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.island{padding:11px 18px;border-radius:999px;background:linear-gradient(135deg,rgba(35,12,68,.84),rgba(14,22,58,.84));border:1.5px solid rgba(255,255,255,.26);box-shadow:0 12px 35px rgba(255,0,127,.25),0 4px 20px rgba(0,210,255,.2),inset 0 1px 0 rgba(255,255,255,.35);backdrop-filter:blur(26px) saturate(200%);-webkit-backdrop-filter:blur(26px) saturate(200%);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer}
+.brand img{width:38px;height:38px;border-radius:12px;object-fit:cover;border:2px solid #00f5d4;box-shadow:0 0 15px rgba(0,245,212,.5)}
+.rbt{font-weight:800;background:linear-gradient(90deg,#ff007f,#ffbe0b,#00f5d4,#00bbf9,#ff007f);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:rf 5s linear infinite}
+.brand b{font-size:18px;letter-spacing:.5px}
+#count{font-size:11.5px;font-weight:800;padding:6px 13px;border-radius:999px;color:#052e16;background:linear-gradient(135deg,#00f59b,#00d2ff);box-shadow:0 0 15px rgba(0,245,155,.45);display:inline-flex;align-items:center;gap:6px}
+#count::before{content:"";width:7px;height:7px;border-radius:50%;background:#052e16;animation:pg 1.2s infinite}
+.promo{margin:4px auto 0;max-width:1120px;padding:0 16px}
+.promo div{padding:10px 16px;border-radius:18px;background:linear-gradient(90deg,rgba(255,0,127,.3),rgba(255,190,11,.25),rgba(0,245,212,.25),rgba(131,56,236,.3));border:1px solid rgba(255,255,255,.26);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;text-align:center;font-size:12px;font-weight:800}
+.promo span:first-child{padding:3px 10px;border-radius:999px;background:linear-gradient(135deg,#ff007f,#ff7700);font-size:10px;text-transform:uppercase;letter-spacing:.6px}
+.shell{display:none;border-radius:28px;background:linear-gradient(145deg,rgba(35,14,68,.82),rgba(12,18,48,.88));border:2px solid rgba(0,245,212,.5);box-shadow:0 25px 65px rgba(255,0,127,.28),0 0 35px rgba(0,245,212,.22),inset 0 1px 0 rgba(255,255,255,.35);backdrop-filter:blur(26px);overflow:hidden;margin-bottom:6px}
+.shell.on{display:block;animation:pi .45s var(--sp) both}
+.shell::before{content:"";display:block;height:4px;background:var(--rb);background-size:300% 100%;animation:rf 4s linear infinite}
+.top{padding:11px 16px;background:linear-gradient(90deg,rgba(255,0,127,.28),rgba(131,56,236,.28),rgba(0,187,249,.28));border-bottom:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.tl{display:flex;align-items:center;gap:10px;min-width:0}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%}
+.dots i:nth-child(1){background:#ff5f56;box-shadow:0 0 8px #ff5f56}.dots i:nth-child(2){background:#ffbd2e;box-shadow:0 0 8px #ffbd2e}.dots i:nth-child(3){background:#27c93f;box-shadow:0 0 8px #27c93f}
+#np{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:linear-gradient(90deg,#fff,#ffbe0b,#00f5d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pb{border:1px solid rgba(255,255,255,.3);background:linear-gradient(135deg,rgba(255,0,127,.45),rgba(131,56,236,.45));color:#fff;font:800 11.5px inherit;font-family:inherit;padding:6px 12px;border-radius:11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.2s}
+.pb:hover{background:linear-gradient(135deg,#ff007f,#00bbf9);transform:translateY(-1px)}
+.player{position:relative;aspect-ratio:16/9;background:#030108;overflow:hidden}
+.player video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:1}
+#wm{position:absolute;z-index:2;right:14px;top:13px;width:clamp(30px,5vw,46px);opacity:.65;filter:drop-shadow(0 2px 8px rgba(0,0,0,.7));pointer-events:none}
+.um{position:absolute;z-index:4;left:14px;top:14px;display:none;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.45);background:linear-gradient(135deg,#ff007f,#ff7700);color:#fff;font:800 12px inherit;font-family:inherit;cursor:pointer;box-shadow:0 8px 25px rgba(255,0,127,.6);animation:pg 1.5s infinite}
+.um.show{display:inline-flex}
+.ov{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;background:rgba(10,4,28,.82);backdrop-filter:blur(18px);z-index:3}
+.ov.show{display:flex}.ov b{font-size:16px;font-weight:800;background:linear-gradient(90deg,#ffbe0b,#ff007f,#00f5d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.ov p{color:#e2e8f0;font-size:13.5px}
+.spin{width:44px;height:44px;border:4px solid rgba(255,255,255,.14);border-top-color:#ff007f;border-right-color:#00f5d4;border-bottom-color:#ffbe0b;border-radius:50%;animation:sp .8s linear infinite}
+.info{padding:16px 18px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;gap:10px}
+.info h1{font-size:clamp(18px,3.6vw,23px);font-weight:800;background:linear-gradient(90deg,#fff,#ffbe0b,#00f5d4,#00bbf9);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:rf 6s linear infinite}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.8px;padding:5px 11px;border-radius:99px;background:linear-gradient(135deg,#ff0055,#ff7700);border:1px solid rgba(255,255,255,.35);box-shadow:0 4px 14px rgba(255,0,85,.4)}
+.badge i{width:7px;height:7px;border-radius:50%;background:#00ff87;box-shadow:0 0 8px #00ff87;animation:pg 1.2s infinite}
+.chip{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(0,245,212,.16);border:1px solid rgba(0,245,212,.4);color:#70e6ff}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:22px 0 14px;padding:13px 16px;border-radius:20px;background:linear-gradient(90deg,rgba(255,0,127,.3),rgba(131,56,236,.3),rgba(0,187,249,.3));border:1px solid rgba(255,255,255,.25);box-shadow:0 10px 28px rgba(131,56,236,.22);backdrop-filter:blur(20px)}
+.bar h2{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,#fff,#ffbe0b,#00f5d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.bar h2 i{-webkit-text-fill-color:initial;color:#ffbe0b}
+.bar h2 img{-webkit-text-fill-color:initial;width:30px;height:20px;border-radius:4px;object-fit:cover}
+.bar .pb{margin-left:auto}
+.bar input{flex:1;min-width:170px;max-width:300px;margin-left:auto;background:rgba(10,4,26,.65);border:1.5px solid rgba(255,255,255,.25);color:#fff;font:600 13.5px inherit;font-family:inherit;padding:10px 15px;border-radius:14px;outline:none;transition:.25s}
+.bar input:focus{border-color:#00f5d4;box-shadow:0 0 0 3px rgba(0,245,212,.2)}
+.bar input::placeholder{color:#cbd5e1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{position:relative;overflow:hidden;padding:16px;border-radius:24px;cursor:pointer;display:flex;align-items:center;gap:13px;backdrop-filter:blur(24px) saturate(160%);border:1.5px solid;box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .28s var(--sp),box-shadow .28s}
+.t0{background:linear-gradient(145deg,rgba(255,0,127,.32),rgba(131,56,236,.22),rgba(20,10,48,.75));border-color:rgba(255,0,127,.45)}
+.t1{background:linear-gradient(145deg,rgba(0,245,155,.32),rgba(0,187,249,.22),rgba(10,32,48,.75));border-color:rgba(0,245,155,.45)}
+.t2{background:linear-gradient(145deg,rgba(255,158,0,.34),rgba(255,0,85,.22),rgba(45,14,36,.75));border-color:rgba(255,190,11,.5)}
+.t3{background:linear-gradient(145deg,rgba(0,210,255,.34),rgba(155,93,229,.24),rgba(18,16,52,.75));border-color:rgba(0,210,255,.5)}
+.card:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 18px 42px rgba(255,0,127,.28)}.card:active{transform:scale(.98)}
+.card.sel{border:2px solid #00f5d4;box-shadow:0 16px 40px rgba(0,245,212,.32)}
+.flag{flex:none;width:74px;height:50px;border-radius:10px;object-fit:cover;box-shadow:0 4px 14px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.3)}
+.logo{flex:none;width:54px;height:54px;border-radius:15px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .logo img{width:100%;height:100%;object-fit:contain;padding:4px}
-.info{flex:1;min-width:0}
-.info h3{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.info small{color:#cbd5e1;font-size:12px}
-.fav{background:none;border:0;color:#cbd5e1;font-size:18px;cursor:pointer;padding:6px}
-.fav.on{color:#ff007f}
-.empty{grid-column:1/-1;text-align:center;padding:36px 16px;border:1.5px dashed rgba(255,255,255,.25);border-radius:20px;background:rgba(25,10,48,.8)}
-.empty b{display:block;font-size:17px;margin-bottom:6px;color:#ffbe0b}
-.sk{height:80px;border-radius:20px;background:rgba(255,255,255,.07)}
+.ci{flex:1;min-width:0}.ci h3{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 8px rgba(0,0,0,.35)}
+.ci small{color:#e2e8f0;font-size:12px}
+.ar{color:#ffbe0b;font-size:16px}
+.fv{background:none;border:0;color:#e2e8f0;font-size:18px;cursor:pointer;padding:6px}.fv.on{color:#ff007f}
+.more{display:flex;width:100%;max-width:420px;margin:26px auto 0;background:linear-gradient(135deg,#ff007f,#ff7700 45%,#8338ec);background-size:200% 200%;animation:rf 4s ease infinite;color:#fff;border:1px solid rgba(255,255,255,.4);font:800 15px inherit;font-family:inherit;padding:15px;border-radius:18px;cursor:pointer;justify-content:center;align-items:center;gap:10px;box-shadow:0 8px 22px rgba(255,0,127,.35),inset 0 1px 0 rgba(255,255,255,.4)}
+.more:active{transform:scale(.97)}
+.empty{grid-column:1/-1;text-align:center;padding:40px 18px;border:1.5px dashed rgba(255,255,255,.3);border-radius:24px;background:linear-gradient(135deg,rgba(255,0,127,.15),rgba(0,187,249,.15))}
+.empty b{display:block;font-size:18px;margin-bottom:8px;color:#ffbe0b}
+.sk{height:90px;border-radius:24px;background:linear-gradient(90deg,rgba(255,0,127,.14),rgba(0,245,212,.24),rgba(255,0,127,.14));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
 </style></head><body>
+<div class="orb o1"></div><div class="orb o2"></div>
 <header><div class="island">
-  <div class="brand"><img src="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png" alt="Hrry TV"><b class="grad">HRRY TV</b></div>
-  <span id="count">Loading…</span>
+  <div class="brand" onclick="location.hash='/home'"><img src="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png" alt="Hrry TV"><b class="rbt">HRRY TV</b></div>
+  <span id="count">LIVE TV</span>
 </div></header>
+<div class="promo"><div><span>⚡ Live HD</span><span>Watch live TV from every country • Your recent channels are saved automatically</span></div></div>
 <main>
-  <section class="player-wrap" id="pw"><div class="player">
-    <video id="v" controls playsinline webkit-playsinline preload="none"></video>
-    <img id="wm" src="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png" alt="">
-    <div class="ov" id="ov"></div>
-  </div></section>
-  <section class="tools" id="tools"></section>
-  <div class="bar">
-    <h2><i class="fas fa-tv"></i> Live Channels</h2>
-    <select id="cty" aria-label="Country"></select>
-    <button class="pill" id="favBtn"><i class="fas fa-heart"></i> Favorites</button>
-    <input id="q" type="search" placeholder="Search channels…">
-  </div>
-  <section class="grid" id="grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div></section>
+  <section class="shell" id="shell">
+    <div class="top">
+      <div class="tl"><div class="dots"><i></i><i></i><i></i></div><span id="np">Live TV</span></div>
+      <div class="row"><button class="pb" id="rl"><i class="fas fa-rotate-right"></i> Reload</button><button class="pb" id="fs"><i class="fas fa-expand"></i> Fullscreen</button></div>
+    </div>
+    <div class="player" id="pl">
+      <video id="v" controls playsinline webkit-playsinline preload="none"></video>
+      <img id="wm" src="https://i.ibb.co/RG9PVntv/file-000000006df082088ecfb45a4b842781.png" alt="">
+      <button class="um" id="um"><i class="fas fa-volume-high"></i> Tap to Unmute</button>
+      <div class="ov" id="ov"></div>
+    </div>
+    <section class="info" id="info"></section>
+  </section>
+  <div id="view"></div>
 </main>
 <script>
 (()=>{
-const $=i=>document.getElementById(i),v=$('v'),ov=$('ov'),grid=$('grid'),cty=$('cty');
+const $=i=>document.getElementById(i),v=$('v'),ov=$('ov'),view=$('view');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(_){return d}},set(k,x){try{localStorage.setItem(k,JSON.stringify(x))}catch(_){}}};
-let list=[],cur=null,hls=null,favs=ls.get('hrry_favs',[]),onlyFav=false,code=ls.get('hrry_cc','IN');
 const api=async p=>{const r=await fetch(p);if(!r.ok)throw 0;return r.json()};
-const fk=c=>c.n+'|'+code;
+const TOP=['IN','US','GB','PK','BD','CA','AU','AE','SA','ID'];
+let countries=[],cache={},reg=[],cur=null,hls=null,hist=ls.get('hrry_hist',[]),favs=ls.get('hrry_favs',[]);
+const flag=c=>`https://flagcdn.com/w160/${c.toLowerCase()}.png`;
+const cname=cc=>(countries.find(x=>x.c===cc)||{}).n||cc;
+const fk=c=>c.u;
 
-function overlay(h){ov.innerHTML=h;ov.classList.toggle('show',!!h)}
-function play(c){
-  cur=c;$('pw').classList.add('on');$('tools').classList.add('on');
-  overlay('<div class="spin"></div><p>Loading stream…</p>');
+/* ---------- player ---------- */
+const overlay=h=>{ov.innerHTML=h;ov.classList.toggle('show',!!h)};
+function play(c,user=true){
+  cur=c;$('shell').classList.add('on');$('np').textContent=c.n;
+  hist=[c,...hist.filter(x=>x.u!==c.u)].slice(0,12);ls.set('hrry_hist',hist);
+  $('info').innerHTML=`<h1>${esc(c.n)}</h1><div class="row"><span class="badge"><i></i>LIVE STREAM</span><span class="chip"><i class="fas fa-globe"></i> ${esc(cname(c.cc))}</span><span class="chip">${esc(c.g)}</span></div>`;
+  overlay('<div class="spin"></div><b>LOADING LIVE TV HD…</b><p>Starting stream…</p>');
   if(hls){hls.destroy();hls=null}
-  const ok=()=>{overlay('');v.play().catch(()=>{v.muted=true;v.play().catch(()=>{})})};
-  const fail=()=>overlay('<p><b>Stream unavailable</b><br>Try another channel or reload.</p>');
+  try{v.pause();v.removeAttribute('src')}catch(_){}
+  const fail=()=>overlay('<b>STREAM TEMPORARILY BUSY</b><p>Tap Reload or pick another channel.</p>');
+  const go=()=>{if(user){v.muted=false;$('um').classList.remove('show')}
+    v.play().then(()=>{overlay('');$('um').classList.toggle('show',v.muted)}).catch(()=>{v.muted=true;$('um').classList.add('show');v.play().then(()=>overlay('')).catch(()=>overlay(''))})};
   if(window.Hls&&Hls.isSupported()){
-    hls=new Hls({lowLatencyMode:true});hls.loadSource(c.u);hls.attachMedia(v);
-    hls.on(Hls.Events.MANIFEST_PARSED,ok);
-    hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)fail()});
-  }else{v.src=c.u;v.onloadedmetadata=ok;v.onerror=fail}
-  $('tools').innerHTML=`<div class="row" style="justify-content:space-between"><h1>${esc(c.n)}</h1><span class="badge"><i></i>LIVE</span></div>
-  <div class="row"><button class="pill" id="rl"><i class="fas fa-rotate"></i> Reload</button><button class="pill" id="fs"><i class="fas fa-expand"></i> Fullscreen</button></div>`;
-  $('rl').onclick=()=>play(cur);
-  $('fs').onclick=()=>{const e=v.parentElement;(e.requestFullscreen||v.webkitEnterFullscreen||(()=>{})).call(e.requestFullscreen?e:v)};
-  render();window.scrollTo({top:0,behavior:'smooth'});
+    hls=new Hls({enableWorker:false,maxBufferLength:25});hls.loadSource(c.u);hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,go);
+    hls.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal)return;
+      if(d.type===Hls.ErrorTypes.NETWORK_ERROR&&(hls._r=(hls._r||0)+1)<4)hls.startLoad();
+      else if(d.type===Hls.ErrorTypes.MEDIA_ERROR)hls.recoverMediaError();else fail()});
+  }else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=c.u;v.onloadedmetadata=go;v.onerror=fail}else fail();
+  window.scrollTo({top:0,behavior:'smooth'});route(true);
 }
-function render(){
-  const q=$('q').value.trim().toLowerCase();
-  const a=list.filter(c=>(!onlyFav||favs.includes(fk(c)))&&(!q||(c.n+' '+c.g).toLowerCase().includes(q)));
-  $('count').textContent=a.length+' Channels';
-  if(!a.length){grid.innerHTML='<div class="empty"><b>No channels found</b>Try another search or country.</div>';return}
-  grid.innerHTML=a.map((c,i)=>{const f=favs.includes(fk(c));
-    return `<div class="card t${i%4}${cur&&cur.u===c.u?' sel':''}" data-i="${list.indexOf(c)}">
-    <div class="logo">${c.l?`<img loading="lazy" src="${esc(c.l)}" alt="" onerror="this.remove()">`:'<i class="fas fa-tv"></i>'}</div>
-    <div class="info"><h3>${esc(c.n)}</h3><small>${esc(c.g)}</small></div>
-    <button class="fav${f?' on':''}" data-f="${list.indexOf(c)}" aria-label="Favorite"><i class="fa${f?'s':'r'} fa-heart"></i></button></div>`}).join('');
+v.addEventListener('playing',()=>overlay(''));
+$('um').onclick=()=>{v.muted=false;v.volume=1;$('um').classList.remove('show');v.play().catch(()=>{})};
+$('rl').onclick=()=>cur&&play(cur);
+$('fs').onclick=()=>{const p=$('pl');document.fullscreenElement?document.exitFullscreen():(p.requestFullscreen?p.requestFullscreen():v.webkitEnterFullscreen&&v.webkitEnterFullscreen())};
+
+/* ---------- cards ---------- */
+const ctyCard=(c,i)=>`<div class="card t${i%4}" data-c="${esc(c.c)}"><img class="flag" loading="lazy" src="${flag(c.c)}" alt=""><div class="ci"><h3>${esc(c.n)}</h3><small>Watch live channels</small></div><i class="fas fa-chevron-right ar"></i></div>`;
+function chCard(c,i){
+  const k=reg.push(c)-1,f=favs.some(x=>x.u===c.u);
+  return `<div class="card t${i%4}${cur&&cur.u===c.u?' sel':''}" data-i="${k}"><div class="logo">${c.l?`<img loading="lazy" src="${esc(c.l)}" alt="" onerror="this.remove()">`:'<i class="fas fa-tv"></i>'}</div><div class="ci"><h3>${esc(c.n)}</h3><small>${esc(c.g)}</small></div><button class="fv${f?' on':''}" data-f="${k}" aria-label="Favorite"><i class="fa${f?'s':'r'} fa-heart"></i></button></div>`;
 }
-grid.onclick=e=>{
+const sect=(t,ic,extra='')=>`<div class="bar"><h2><i class="fas ${ic}"></i> ${t}</h2>${extra}</div>`;
+
+/* ---------- views ---------- */
+function home(){
+  reg=[];
+  const top=TOP.map(c=>countries.find(x=>x.c===c)).filter(Boolean);
+  let h=sect('Top Countries','fa-fire')+`<section class="grid">${top.length?top.map(ctyCard).join(''):'<div class="sk"></div><div class="sk"></div><div class="sk"></div>'}</section>`;
+  if(hist.length)h+=sect('Recently Played','fa-clock-rotate-left','<button class="pb" id="clr"><i class="fas fa-trash"></i> Clear</button>')+`<section class="grid">${hist.map(chCard).join('')}</section>`;
+  if(favs.length)h+=sect('Favorites','fa-heart')+`<section class="grid">${favs.map(chCard).join('')}</section>`;
+  h+=`<button class="more" onclick="location.hash='/countries'"><i class="fas fa-earth-asia"></i> Explore More Countries</button>`;
+  view.innerHTML=h;const b=$('clr');if(b)b.onclick=()=>{hist=[];ls.set('hrry_hist',hist);home()};
+  $('count').textContent='LIVE TV';
+}
+function countriesView(){
+  view.innerHTML=sect('All Countries','fa-earth-asia','<input id="cs" type="search" placeholder="Search country…">')+'<section class="grid" id="cg"></section>';
+  const draw=()=>{const q=$('cs').value.trim().toLowerCase(),a=countries.filter(c=>!q||c.n.toLowerCase().includes(q));
+    $('cg').innerHTML=a.length?a.map(ctyCard).join(''):'<div class="empty"><b>No country found</b>Try another name.</div>';$('count').textContent=a.length+' COUNTRIES'};
+  $('cs').oninput=draw;draw();
+}
+async function countryView(cc){
+  cc=cc.toUpperCase();
+  view.innerHTML=`<div class="bar"><h2><img src="${flag(cc)}" alt=""> ${esc(cname(cc))}</h2><input id="qs" type="search" placeholder="Search channels…"></div><section class="grid" id="chg"><div class="sk"></div><div class="sk"></div><div class="sk"></div></section>`;
+  let list=cache[cc];
+  if(!list){try{list=(await api('/api/channels?c='+cc)).map(c=>({...c,cc}))}catch(_){list=null}if(location.hash.slice(1)!=='/country/'+cc)return;cache[cc]=list}
+  const draw=()=>{reg=[];const q=$('qs').value.trim().toLowerCase();
+    if(!list){$('chg').innerHTML='<div class="empty"><b>Unable to load channels</b>Please check your connection and try again.</div>';return}
+    const a=list.filter(c=>!q||(c.n+' '+c.g).toLowerCase().includes(q));
+    $('count').textContent=a.length+' CHANNELS';
+    $('chg').innerHTML=a.length?a.map(chCard).join(''):'<div class="empty"><b>NO CHANNELS FOUND</b>Nothing matched your search.</div>'};
+  $('qs').oninput=draw;draw();
+}
+view.onclick=e=>{
   const f=e.target.closest('[data-f]');
-  if(f){const c=list[f.dataset.f],k=fk(c);favs=favs.includes(k)?favs.filter(x=>x!==k):[...favs,k];ls.set('hrry_favs',favs);render();return}
-  const d=e.target.closest('[data-i]');if(d)play(list[d.dataset.i]);
+  if(f){const c=reg[f.dataset.f];favs=favs.some(x=>x.u===c.u)?favs.filter(x=>x.u!==c.u):[c,...favs];ls.set('hrry_favs',favs);
+    f.classList.toggle('on');f.firstChild.className='fa'+(f.classList.contains('on')?'s':'r')+' fa-heart';return}
+  const i=e.target.closest('[data-i]');if(i)return play(reg[i.dataset.i]);
+  const c=e.target.closest('[data-c]');if(c)location.hash='/country/'+c.dataset.c;
 };
-async function load(){
-  grid.innerHTML='<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
-  try{list=await api('/api/channels?c='+encodeURIComponent(code))}catch(_){list=[]}
-  render();
+function route(keep){
+  const h=location.hash.slice(1)||'/home';
+  if(!keep)window.scrollTo(0,0);
+  if(h.startsWith('/country/'))countryView(h.split('/')[2]);
+  else if(h==='/countries')countriesView();
+  else home();
 }
-$('q').oninput=render;
-$('favBtn').onclick=function(){onlyFav=!onlyFav;this.style.background=onlyFav?'linear-gradient(135deg,#ff007f,#8338ec)':'';render()};
-cty.onchange=()=>{code=cty.value;ls.set('hrry_cc',code);load()};
+window.onhashchange=()=>route();
 (async()=>{
-  try{const cs=await api('/api/countries');
-    cty.innerHTML=cs.sort((a,b)=>a.n.localeCompare(b.n)).map(c=>`<option value="${esc(c.c)}"${c.c===code?' selected':''}>${esc(c.f||'')} ${esc(c.n)}</option>`).join('')}catch(_){}
-  load();
+  try{countries=await api('/api/countries')}catch(_){}
+  route();
 })();
 })();
 </script></body></html>
